@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Kataline98 Radio</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+	<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+	<style>
+		body {
+			min-width: 100vw;
+			min-height: 100vh;
+			background-image: url('bg.JPG');
+			background-size: cover;
+			background-position: center center;
+		}
+
+		.slider {
+			-webkit-appearance: none;
+			width: 100%;
+			height: 25px;
+			background: #d3d3d3;
+			outline: none;
+			opacity: 0.7;
+			-webkit-transition: .2s;
+			transition: opacity .2s;
+		}
+
+		.slider:hover {
+			opacity: 1;
+		}
+
+		.slider::-webkit-slider-thumb {
+			-webkit-appearance: none;
+			appearance: none;
+			width: 25px;
+			height: 25px;
+			background: #90caf9;
+			cursor: pointer;
+		}
+
+		.slider::-moz-range-thumb {
+			width: 25px;
+			height: 25px;
+			background: #90caf9;
+			cursor: pointer;
+		}
+
+		.navbar .navbar-brand {
+		text-align: center;
+		display: block;
+		width: 100%;
+		}
+
+		.navbar .navbar-brand > .navbar-item,
+		.navbar .navbar-brand .navbar-link {
+		display: inline-block;
+		}
+	</style>
+</head>
+
+<body>
+	<nav class="navbar is-transparent" role="navigation" aria-label="main navigation" style="background-color: rgba(142, 36, 170, 0.35)">
+		<div class="navbar-brand">
+			<a class="navbar-item" href="" style="padding-top: 12px;">
+				<img src="logo.png" style="width: 125px; height: 70px;">
+			</a>
+
+			<!-- <a class="navbar-item">
+				Kataline98 Radio
+			</a> -->
+
+			<!-- <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
+				data-target="navbarBasicExample">
+				<span aria-hidden="true"></span>
+				<span aria-hidden="true"></span>
+				<span aria-hidden="true"></span>
+			</a> -->
+		</div>
+
+		<div id="navbarBasicExample" class="navbar-menu">
+			<div class="navbar-start">
+				<a class="navbar-item">
+					Home
+				</a>
+
+				<a class="navbar-item">
+					Documentation
+				</a>
+			</div>
+		</div>
+
+		<div class="navbar-end">
+		</div>
+	</nav>
+
+	<!-- Full screen: body is set to min-height 100vh, section to 90vh (due to navbar)-->
+	<!-- Placing section inside columns doesn't work, has to be section, then columns -->
+	<section class="section" style="height: 90vh;">
+		<div class="columns is-flex is-centered is-vcentered" style="height: 80vh;">
+			
+			<div class="column is-half">	
+				<audio id="player">
+					<source src="http://96.32.9.59:8027/stream" type='audio/mpeg'>
+				</audio>
+
+				<div class="container has-text-centered ml-5 mr-5 has-text-white">
+
+					<div id="onair" class="container" style="display: none;">
+						<p id="onairicon" class="material-symbols-outlined">
+							wifi_tethering
+						</p>
+						<p id="onairtext" class="is-size-7">EN VIVO</p>
+						<p class="mt-1 pt-1 pb-1 pl-2 pr-2" id="songtitle" style="background-color: rgba(0,0,0,0.45);">Song Title</p>
+					</div>
+
+					<p onclick="playButtonClick()">
+						<span id="playpause" class="material-symbols-outlined has-text-grey-light" style="font-size: 256px; text-shadow: hsl(0, 0%, 86%) 1px 0 10px;">
+							play_circle
+						</span>
+					</p>
+
+					<div id="volumesection" class="buttons is-centered">
+						<span id="volumeindicator" onclick="toggleMute()" class="material-symbols-outlined" style="text-shadow: hsl(0, 0%, 86%) 1px 0 10px;">
+							volume_up
+						</span>
+						&nbsp;
+						<input id="volume" type="range" min="1" max="100" value="50">
+					</div>
+				</div>
+				
+				<!-- Javascript -->
+				<script type="text/javascript">
+					var playButtonClick = function () {
+						var audio = document.getElementById("player");
+						var playBtn = document.getElementById('playpause');
+						var onAirIcon = document.getElementById("onairicon");
+
+						if (onAirIcon.innerText !== "wifi_tethering") {
+							return;
+						}
+
+						if (!audio.paused && !audio.ended) {
+							audio.pause();
+							playBtn.innerText = "play_circle";
+						}
+						else if (audio.paused) {
+							audio.play().then(a => {
+								playBtn.innerText = "pause_circle";
+							});
+						}
+					}
+
+					var toggleMute = function() {
+						var audio = document.getElementById("player");
+						var volumeSlider = document.getElementById("volume");
+						var volumeIndicator = document.getElementById("volumeindicator");
+						if (audio.volume === 0) {
+							audio.volume = 0.5;
+							volumeSlider.value = 50;
+							volumeIndicator.innerText = "volume_up";
+						}
+						else {
+							audio.volume = 0;
+							volumeSlider.value = 0;
+							volumeIndicator.innerText = "volume_mute";
+						}
+					}
+
+					// Important info at: https://github.com/Wavestreaming/jquery-shoutcast/blob/master/jquery.shoutcast.js
+					var getStats = function() {
+						//console.log("Querying stream info...");
+						var audio = document.getElementById("player");
+						var onAirElement = document.getElementById("onair");
+						var onAirIcon = document.getElementById("onairicon");
+						var onAirText = document.getElementById("onairtext");
+						var songTitleElement = document.getElementById("songtitle");
+						var playBtn = document.getElementById('playpause');
+
+						var url = 'http://96.32.9.59:8027/stats?sid=1&json=1';
+						var r = $.ajax({
+							url : url,
+							dataType : 'jsonp',
+							timeout : '2000'
+						});
+
+						r.done(function(data){
+							//console.log(data);
+							if(typeof data !== 'object' || typeof data.streamstatus === 'undefined') {
+								onAirElement.style.display = "none";
+								return;
+							}
+
+							// Show on air
+							if (data.streamstatus === 1) {
+								onAirElement.style.display = "block";
+								onAirIcon.innerText = "wifi_tethering";
+								onAirText.innerText = "EN VIVO";
+								playBtn.classList.replace("has-text-grey-light", "has-text-white");
+								songTitleElement.style.display = "block";
+							}
+							else if (data.streamstatus === 0) {
+								onAirElement.style.display = "block";
+								onAirIcon.innerText = "wifi_tethering_error";
+								onAirText.innerText = "Esperando conexión...";
+								playBtn.classList.replace("has-text-white", "has-text-grey-light");
+								playBtn.innerText = "play_circle";
+								songTitleElement.style.display = "none";
+							}
+							else {
+								onAirElement.style.display = "block";
+								onAirIcon.innerText = "wifi_tethering_off";
+								playBtn.classList.replace("has-text-white", "has-text-grey-light");
+								playBtn.innerText = "play_circle";
+								onAirText.innerText = "DESCONECTADA"
+								songTitleElement.style.display = "none";
+							}
+
+							songTitleElement.innerText = data.songtitle;
+						});
+						r.fail(function(){
+							onAirElement.style.display = "block";
+							onAirIcon.innerText = "wifi_tethering_off";
+							playBtn.classList.replace("has-text-white", "has-text-grey-light");
+							playBtn.innerText = "play_circle";
+							onAirText.innerText = "NO DISPONIBLE"
+							songTitleElement.style.display = "none";
+						});
+						return this;
+					}
+
+					var init = function() {
+						var volumeSection = document.getElementById("volumesection");
+						var volumeSlider = document.getElementById("volume");
+
+						// Detect if running iOS - if so, hide volume
+						var ua = window.navigator.userAgent;
+						var iOS = !!ua.match(/iPad/i) || !!ua.match(/iPhone/i);
+						var webkit = !!ua.match(/WebKit/i);
+						var iOSSafari = iOS && webkit && !ua.match(/CriOS/i);
+
+						console.log("Is OS: ", iOSSafari);
+
+						if (!iOSSafari) {
+							volumeSlider.style.display = "block";
+							volumeSlider.value = 50;
+							volumeSlider.addEventListener("input", (event) => {
+								var volumeIndicator = document.getElementById("volumeindicator");
+								var audio = document.getElementById("player");
+								audio.volume = event.target.value / 100;
+								if (event.target.value === 1) {
+									volumeIndicator.innerText = "volume_mute";
+								}
+								else if (event.target.value < 50) {
+									volumeIndicator.innerText = "volume_down";
+								}
+								else if (event.target.value > 50) {
+									volumeIndicator.innerText = "volume_up";
+								}
+							});
+						}
+						else {
+							volumeSection.style.display = "none";
+						}
+
+						getStats();
+						setInterval(() => getStats(), 5000);
+					}
+
+					init();
+					
+				</script>
+			</div>
+
+		</div>
+	</section>
+</body>
+
+</html>

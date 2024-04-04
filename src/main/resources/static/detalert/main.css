@@ -1,0 +1,75 @@
+html {
+    overflow: auto;
+}
+
+body {
+    overflow: auto;
+}
+
+.add-top-border {
+    border-top: var(--bulma-grey-dark);
+    border-top-style: solid;
+    border-top-width: thin;
+}
+
+.priority-notification {
+    border-color: hsl(var(--bulma-danger-h), var(--bulma-danger-s), var(--bulma-danger-l));
+    border-style: solid;
+    animation: blink 2s 10;
+}
+@keyframes blink {
+  50% {
+    border-color: var(--bulma-danger-soft);
+    background-color: hsl(var(--bulma-danger-h), var(--bulma-danger-s), var(--bulma-danger-l));
+  }
+}
+
+.connected_icon {
+    animation: connected_blink 4s infinite;
+}
+@keyframes connected_blink {
+    25% {
+        transform: scale(1.1);
+        color: hsl(var(--bulma-danger-h), var(--bulma-danger-s), var(--bulma-danger-l));
+    }
+    50% {
+        transform: scale(1);
+        color: hsl(var(--bulma-danger-h), var(--bulma-danger-s), var(--bulma-danger-l));
+    }
+    75% {
+        transform: scale(1);
+        color: hsl(var(--bulma-primary-text-h), var(--bulma-primary-text-s), var(--bulma-primary-text-l));
+    }
+    100% {
+        transform: scale(1);
+        color: hsl(var(--bulma-primary-text-h), var(--bulma-primary-text-s), var(--bulma-primary-text-l));
+    }
+}
+
+.circle, .circle::before {
+  content: " ";
+  margin: 15px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  margin: 0 auto;
+  transition: all 0.3s;
+  background-color: #FF0055;
+}
+
+.circle::before {
+  animation: mymove 2s infinite;
+  position: absolute;
+  background-color: #00FF00
+}
+
+@-webkit-keyframes mymove {
+  50%   {
+    transform: scale(2);
+    opacity: 0
+  }
+  100%   {
+    transform: scale(2);
+    opacity: 0
+  }
+}
