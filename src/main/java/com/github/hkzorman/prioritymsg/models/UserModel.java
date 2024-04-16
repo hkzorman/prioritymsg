@@ -1,7 +1,5 @@
 package com.github.hkzorman.prioritymsg.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 public class UserModel {
     private String username;
     private String password;

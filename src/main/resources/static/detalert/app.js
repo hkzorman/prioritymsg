@@ -1,9 +1,11 @@
 var currentUser = null;
 var isConnected = false;
+var audioMessagesCount = 0;
+var isEnableAutomaticAudioPlay = true;
 
 var stompClient = new StompJs.Client({
-    brokerURL: 'ws://katpoc.duckdns.org/prioritymsg-websocket'
-    //brokerURL: 'ws://localhost:8080/prioritymsg-websocket'
+    //brokerURL: 'ws://katpoc.duckdns.org/prioritymsg-websocket'
+    brokerURL: 'ws://localhost:8080/prioritymsg-websocket'
 });
 
 stompClient.onConnect = (frame) => {
@@ -12,6 +14,14 @@ stompClient.onConnect = (frame) => {
     currentUser = frame.headers["user-name"];
     $("#username").text(currentUser);
     stompClient.subscribe('/topic/messages', (response) => {
+        $("#name").val("");
+        console.log("Response: ", response);
+        var message = JSON.parse(response.body)
+        addMessageEntry(message);
+    });
+
+    // Subscribe to read-aloud messages
+    stompClient.subscribe('/topic/messages/tts', (response) => {
         $("#name").val("");
         console.log("Response: ", response);
         var message = JSON.parse(response.body)
@@ -71,16 +81,26 @@ function sendMessage(isPriority) {
     });
 }
 
+function sendAudioMessage(isPriority) {
+    stompClient.publish({
+        destination: "/app/msg/readAloud",
+        body: JSON.stringify({'message': $("#name").val(), 'priority': isPriority})
+    });
+}
+
 function addMessageEntry(message) {
     var username = message.username;
     var messageText = message.message;
     var time = message.time;
     var isPriority = message.priority;
     var isCurrentUser = currentUser === username;
+    var hasAudio = message.audioInfo !== null;
+    var audioElementId = "#tts" + audioMessagesCount;
+    var audioElementControlId = "#tts" + audioMessagesCount + "Control";
 
     var messageEntry = '<div class="columns is-mobile">';
     var emptyColumn = '<div class="column is-one-fifth"></div>';
-    var messageColumn = '<div class="column"><div class="notification pt-1 pb-2' + (isCurrentUser ? ' is-link' : (isPriority ? ' priority-notification' : '')) + '"><article class="media"><div class="media-content"><span class="is-size-7 has-text-grey' + (isCurrentUser ? 'dark' : 'light') + '">' + username + '</span><p>' + messageText + '</p></div><figure class="media-right">' + (isPriority ? '<div class="circle"></div>' : '') + '</figure></article></div></div>'
+    var messageColumn = '<div class="column"><div class="notification pt-1 pb-2' + (isCurrentUser ? ' is-link' : (isPriority ? ' priority-notification' : '')) + '"><article class="media"><div class="media-content"><span class="is-size-7 has-text-grey' + (isCurrentUser ? 'dark' : 'light') + '">' + username + '</span><p>' + messageText + '</p></div><figure class="media-right">' + (isPriority ? '<div class="circle"></div>' : '') + (hasAudio ? '<audio id="' + audioElementId + '"><source src="' + message.audioInfo.audioFilePath + '" type="audio/wav"></audio><span class="icon is-small"><span id="' + audioElementControlId + '" class="material-symbols-rounded">auto_read_play</span></span>' : '') + '</figure></article></div></div>'
 
     messageEntry += (isCurrentUser ? emptyColumn + messageColumn : messageColumn + emptyColumn) + "</div>";
 
@@ -89,7 +109,44 @@ function addMessageEntry(message) {
     console.log(messageEntry);
 
     $("#conversation").append(messageEntry);
+
+    // Audio controls
+    if (hasAudio) {
+        $(document).ready(function() {
+            var audioElementControl = $(audioElementControlId);
+            audioElementControl.on("click", audioElementControlId, function() {
+                console.log("Something was clicked: " + audioElementControlId, audioElementId);
+                ttsAudioControl(audioElementId, audioElementControlId);
+            });
+            $( audioElementId ).on("ended", () => { audioElementControl.text("auto_read_play"); });
+        });
+        audioMessagesCount++;
+
+        // Automatic play
+        if (isEnableAutomaticAudioPlay) {
+            console.log("Audio elementID: " + audioElementId);
+            var audioPlayer = document.getElementById(audioElementId);
+            console.log("Garbage: ", audioPlayer);
+            audioPlayer.play().then(() => { $(audioElementControlId).text("auto_read_pause"); });
+        }
+    }
+
     $("html").animate({ scrollTop: $("html").prop("scrollHeight")}, 1000);
+}
+
+function ttsAudioControl(audioElementId, audioElementControlId) {
+    var audio = document.getElementById(audioElementId);
+    var control = $(audioElementControlId);
+    console.log("The garbage");
+    if (audio.paused) {
+        audio.play().then(() => {
+            control.innerText = "auto_read_play";
+        });
+    }
+    else {
+        audio.pause();
+        control.innerText = "auto_read_pause";
+    }
 }
 
 $(function () {
@@ -99,4 +156,20 @@ $(function () {
     $( "#send" ).click(() => sendMessage(false));
     $( "#sendMobile" ).click(() => sendMessage(false));
     $( "#sendPriority" ).click(() => sendMessage(true));
+    $( "#sendAudio" ).click(() => sendAudioMessage(true));
+
+    // Comment below for release
+    var message = {
+        message: "Hola, esto es un mensaje",
+        username: "prueba",
+        time: "",
+        priority: false,
+        audioInfo: {
+            audioFilePath: "/audio/sound.wav"
+        }
+    };
+    $( "#test" ).click(() => {
+        $( "#conversation" ).show();
+        addMessageEntry(message);
+    });
 });

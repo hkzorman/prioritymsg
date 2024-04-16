@@ -4,10 +4,55 @@ import java.time.LocalTime;
 
 public class Message {
 
+    public static class AudioInfo {
+        private boolean isSuccess;
+        private String audioFilePath;
+        private long duration;
+
+        public AudioInfo() {}
+
+        public AudioInfo(boolean isSuccess) {
+            this.isSuccess = isSuccess;
+        }
+
+        public AudioInfo(boolean isSuccess, String audioFilePath, long duration) {
+            this.isSuccess = isSuccess;
+            this.audioFilePath = audioFilePath;
+            this.duration = duration;
+        }
+
+        public boolean isSuccess() {
+            return isSuccess;
+        }
+
+        public void setSuccess(boolean success) {
+            isSuccess = success;
+        }
+
+        public String getAudioFilePath() {
+            return audioFilePath;
+        }
+
+        public void setAudioFilePath(String audioFilePath) {
+            this.audioFilePath = audioFilePath;
+        }
+
+        public long getDuration() {
+            return duration;
+        }
+
+        public void setDuration(long duration) {
+            this.duration = duration;
+        }
+    }
+
     private boolean isPriority;
     private String username;
     private LocalTime time;
     private String message;
+    private AudioInfo audioInfo;
+
+    public Message() {}
 
     public boolean isPriority() {
         return isPriority;
@@ -39,5 +84,13 @@ public class Message {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public AudioInfo getAudioInfo() {
+        return audioInfo;
+    }
+
+    public void setAudioInfo(AudioInfo audioInfo) {
+        this.audioInfo = audioInfo;
     }
 }
